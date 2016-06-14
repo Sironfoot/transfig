@@ -1,0 +1,36 @@
+{
+    "stringValue": "Hello world",
+    "intValue": 123,
+    "floatValue": 123.45,
+    "boolValue": true,
+
+    "sliceValueStrings": [ "string1", "string2", "string3" ],
+    "sliceValueFloats": [ 1.2, 2.3, 3.4 ],
+    "sliceValueInts": [ 1, 2, 3 ],
+    "sliceValueBools": [ true, false, true ],
+
+    "objectValue": {
+        "stringValue": "Hello world",
+        "intValue": 123,
+
+        "objectValue": {
+            "stringValue": "Hello world",
+            "intValue": 123
+        }
+    },
+
+    "sliceValueObjects": [
+        {
+            "stringValue": "Hello world",
+            "intValue": 123
+        },
+        {
+            "stringValue": "Hello world",
+            "intValue": 123
+        },
+        {
+            "stringValue": "Hello world",
+            "intValue": 123
+        }
+    ]
+}

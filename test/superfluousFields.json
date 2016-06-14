@@ -1,0 +1,6 @@
+{
+    "StringValue": "Hello world",
+    "FloatValue": 123.45,
+    "IntValue": 123,
+    "BoolValue": true
+}

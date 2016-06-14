@@ -1,0 +1,6 @@
+{
+    "strings": [ "string1", "string2", "string3", "string4", "string5", "string6", "string7", "string8" ],
+    "floats": [ 1.2, 2.3, 3.4 ],
+    "ints": [ 1 ],
+    "bools": []
+}
