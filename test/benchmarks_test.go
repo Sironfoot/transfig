@@ -14,11 +14,15 @@ func BenchmarkLoad(b *testing.B) {
 		b.Fatal(err)
 	}
 	defer func() {
+		b.StopTimer()
+
 		err = os.Remove("complex.test.json")
 		if err != nil {
 			b.Fatal(err)
 		}
 	}()
+
+	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
 		var complexData complex
@@ -43,11 +47,15 @@ func BenchmarkLoadWithCaching(b *testing.B) {
 		b.Fatal(err)
 	}
 	defer func() {
+		b.StopTimer()
+
 		err = os.Remove("complex.test.json")
 		if err != nil {
 			b.Fatal(err)
 		}
 	}()
+
+	b.ResetTimer()
 
 	for n := 0; n < b.N; n++ {
 		var complexData complex
