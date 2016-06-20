@@ -7,8 +7,10 @@ package transfig
 import (
 	"encoding/json"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -132,7 +134,7 @@ func LoadWithCaching(path, environment string, configData interface{}) error {
 	}
 
 	altExists := true
-	altPath := generateAltPath(path, environment)
+	altPath := generateEnvPath(path, environment)
 	altPathInfo, err := os.Stat(altPath)
 	if os.IsNotExist(err) {
 		altExists = false
@@ -163,31 +165,37 @@ func Load(path, environment string, configData interface{}) (err error) {
 		return ErrConfigDataNotPointer
 	}
 
-	file, err := os.Open(path)
+	// process primary config file
+	data, err := ioutil.ReadFile(path)
 	if os.IsNotExist(err) {
 		return ErrPrimaryConfigFileNotExist
 	} else if err != nil {
 		return fmt.Errorf("config: error opening primary config file: %s", err)
 	}
 
-	err = json.NewDecoder(file).Decode(configData)
+	dataNoComments := stripComments(data)
+
+	err = json.Unmarshal(dataNoComments, configData)
 	if err != nil {
 		return fmt.Errorf("config: cannot unmarshal config file: %s", err)
 	}
 
-	altPath := generateAltPath(path, environment)
+	// process environment specific config file
+	envPath := generateEnvPath(path, environment)
 
-	altFile, err := os.Open(altPath)
+	envData, err := ioutil.ReadFile(envPath)
 	if err != nil && !os.IsNotExist(err) {
-		return fmt.Errorf("config: error opening environment config file \"%s\": %s", altPath, err)
+		return fmt.Errorf("config: error opening environment config file \"%s\": %s", envPath, err)
 	}
 
 	if os.IsNotExist(err) {
 		return nil
 	}
 
-	altConfigData := map[string]interface{}{}
-	err = json.NewDecoder(altFile).Decode(&altConfigData)
+	envDataNoComments := stripComments(envData)
+
+	envConfigData := map[string]interface{}{}
+	err = json.Unmarshal(envDataNoComments, &envConfigData)
 	if err != nil {
 		return fmt.Errorf("config: cannot unmarshal environment config file: %s", err)
 	}
@@ -199,12 +207,12 @@ func Load(path, environment string, configData interface{}) (err error) {
 	}()
 
 	configValue := reflect.ValueOf(configData).Elem()
-	parseMap(altConfigData, configValue)
+	parseMap(envConfigData, configValue)
 
 	return
 }
 
-func generateAltPath(path, environment string) string {
+func generateEnvPath(path, environment string) string {
 	return strings.Replace(path, ".json", "."+environment+".json", 1)
 }
 
@@ -291,4 +299,10 @@ func parseSlice(aSlice []interface{}, configValue reflect.Value) {
 			}
 		}
 	}
+}
+
+var stripCommentsRegex = regexp.MustCompile(`\ *\/\/.+\n`)
+
+func stripComments(jsonText []byte) []byte {
+	return stripCommentsRegex.ReplaceAll(jsonText, nil)
 }
